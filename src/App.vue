@@ -32,7 +32,7 @@ import UserDropdown from './components/UserDropdown.vue'
 
 body {
   background-color: #f5f7fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: inherit;
 }
 
 #app {
