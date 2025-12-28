@@ -1,4 +1,4 @@
-<template>
+﻿﻿﻿﻿﻿<template>
   <div class="month-editor">
     <div v-if="userRole === 'admin'">
       <div class="header-section">

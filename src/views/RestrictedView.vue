@@ -1,14 +1,14 @@
-<template>
+﻿﻿﻿﻿﻿<template>
   <div class="restricted-container">
     <div class="restricted-content">
-      <h1>欢迎使用动漫管理系统</h1>
-      <p class="restricted-message">您当前以普通用户身份登录，只能查看动漫列表，无法进行分类管理和动漫编辑。</p>
+      <h1>娆㈣繋浣跨敤鍔ㄦ极绠＄悊绯荤粺</h1>
+      <p class="restricted-message">鎮ㄥ綋鍓嶄互鏅€氱敤鎴疯韩浠界櫥褰曪紝鍙兘鏌ョ湅鍔ㄦ极鍒楄〃锛屾棤娉曡繘琛屽垎绫荤鐞嗗拰鍔ㄦ极缂栬緫銆?</p>
       
       <div class="anime-list-container">
-        <h2>动漫列表</h2>
+        <h2>鍔ㄦ极鍒楄〃</h2>
         <div class="category-filter">
           <select v-model="selectedCategory" @change="filterAnime">
-            <option value="">所有分类</option>
+            <option value="">鎵€鏈夊垎绫?</option>
             <option v-for="category in categories" :key="category.name" :value="category.name">{{ category.name }}</option>
           </select>
         </div>
@@ -36,7 +36,7 @@ const categories = ref([])
 const selectedCategory = ref('')
 
 const loadAnimeData = () => {
-  // 加载所有月份的动漫数据
+  // 鍔犺浇鎵€鏈夋湀浠界殑鍔ㄦ极鏁版嵁
   const allAnime = []
   const months = ['2025.10', '2026.1']
   
@@ -46,7 +46,7 @@ const loadAnimeData = () => {
       const monthAnime = JSON.parse(monthData)
       allAnime.push(...monthAnime)
     } else {
-      // 如果没有保存的数据，添加默认动漫
+      // 濡傛灉娌℃湁淇濆瓨鐨勬暟鎹紝娣诲姞榛樿鍔ㄦ极
       allAnime.push(
         { id: 1, title: `${month} 新番1`, info: '(全12话) 大陆', image: `/images/${month}/default.jpg` },
         { id: 2, title: `${month} 新番2`, info: '(全13话) 港台', image: `/images/${month}/default.jpg` }
@@ -58,7 +58,7 @@ const loadAnimeData = () => {
 }
 
 const loadCategories = () => {
-  // 加载所有月份的分类数据
+  // 鍔犺浇鎵€鏈夋湀浠界殑鍒嗙被鏁版嵁
   const allCategories = new Set()
   const months = ['2025.10', '2026.1']
   

@@ -5,12 +5,20 @@ import UserDropdown from './components/UserDropdown.vue'
 
 <template>
   <div id="app">
-    <UserDropdown />
-    <div class="app-container">
+    <!-- 仅在非登录页面显示用户下拉菜单 -->
+    <UserDropdown v-if="$route.path !== '/login'" />
+    
+    <!-- 仅在非登录页面显示侧边栏和主内容容器 -->
+    <div class="app-container" v-if="$route.path !== '/login'">
       <Sidebar />
       <main class="main-content">
         <router-view />
       </main>
+    </div>
+    
+    <!-- 在登录页面仅显示路由视图 -->
+    <div v-else>
+      <router-view />
     </div>
   </div>
 </template>
