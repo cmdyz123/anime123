@@ -76,6 +76,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { fixAnimeImagePaths } from '../utils/imageMapper'
 
 const router = useRouter()
 const allAnime = ref([])
@@ -89,6 +90,9 @@ const goBack = () => {
   router.back()
 }
 
+// 统一图片路径处理 - 使用工具函数
+const fixImagePaths = fixAnimeImagePaths
+
 const loadWatchStatus = () => {
   // 加载所有月份的动漫数据
   const months = ['2025.10', '2026.1']
@@ -97,7 +101,9 @@ const loadWatchStatus = () => {
   months.forEach(month => {
     const monthData = localStorage.getItem(`animeList${month}`)
     if (monthData) {
-      const monthAnime = JSON.parse(monthData)
+      let monthAnime = JSON.parse(monthData)
+      // 修复图片路径
+      monthAnime = fixImagePaths(monthAnime)
       allAnimeData.push(...monthAnime)
     }
   })

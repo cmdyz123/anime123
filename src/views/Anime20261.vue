@@ -29,6 +29,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import { fixAnimeImagePaths } from '../utils/imageMapper'
 
 const router = useRouter()
 
@@ -44,11 +45,16 @@ const goToAnimeEditor = () => {
   router.push({ name: 'MonthEditor', params: { month: '2026.1' } })
 }
 
-// 从localStorage加载动漫列表
-const allAnime = ref(JSON.parse(localStorage.getItem('animeList20261')) || [
-  { id: 1, title: '2026年1月新番1', info: '(全12话) 大陆', image: '/images/default.jpg', category: '' },
-  { id: 2, title: '2026年1月新番2', info: '(全13话) 港台', image: '/images/default.jpg', category: '' }
-])
+// 从localStorage加载动漫列表并修复图片路径
+const loadAnimeList = () => {
+  let animeList = JSON.parse(localStorage.getItem('animeList20261')) || [
+    { id: 1, title: '2026年1月新番1', info: '(全12话) 大陆', image: '/images/default.jpg', category: '' },
+    { id: 2, title: '2026年1月新番2', info: '(全13话) 港台', image: '/images/default.jpg', category: '' }
+  ]
+  return fixAnimeImagePaths(animeList)
+}
+
+const allAnime = ref(loadAnimeList())
 
 // 分类筛选
 const categories = ref(JSON.parse(localStorage.getItem('animeCategories2026.1')) || [

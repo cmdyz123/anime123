@@ -29,6 +29,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted, computed } from 'vue'
+import { fixAnimeImagePaths } from '../utils/imageMapper'
 
 const router = useRouter()
 const route = useRoute()
@@ -78,12 +79,14 @@ const loadAnimeCategories = () => {
   
   const savedAnimeList = JSON.parse(localStorage.getItem(`animeList${currentMonth.value}`)) || []
   
-  // 更新所有动漫的分类
+  // 更新所有动漫的分类并修复图片路径
   const updateAnimeWithCategories = (animeList) => {
-      return animeList.map(anime => {
+      let updatedList = animeList.map(anime => {
         const savedAnime = savedAnimeList.find(s => s.id === anime.id)
         return { ...anime, category: savedAnime?.category || '' }
       })
+      // 修复图片路径
+      return fixAnimeImagePaths(updatedList)
     }
     
     allAnime.value = updateAnimeWithCategories(savedAnimeList)

@@ -29,9 +29,14 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import { getCorrectImagePath } from '../utils/imageMapper'
 
 const route = useRoute()
 const anime = JSON.parse(route.query.anime)
+// 修复图片路径
+if (anime.image) {
+  anime.image = getCorrectImagePath(anime.image)
+}
 const currentStatus = ref('未看')
 
 const getDescription = (id) => {

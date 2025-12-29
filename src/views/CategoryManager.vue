@@ -67,6 +67,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import { fixAnimeImagePaths } from '../utils/imageMapper'
 
 const router = useRouter()
 const route = useRoute()
@@ -87,27 +88,6 @@ const editingIndex = ref(-1)
 const originalName = ref('')
 const selectedAnimes = ref([])
 const batchCategory = ref('')
-
-// 修复图片路径函数
-const fixImagePaths = (animeList) => {
-  return animeList.map(anime => {
-    let imagePath = anime.image
-    // 修复错误的路径格式
-    if (imagePath) {
-      // 使用链式调用简化路径处理
-      imagePath = imagePath
-        .replace('/cmdyz123/', '/')  // 移除错误的用户名前缀
-        .replace('/anime123/', '/')   // 移除anime123前缀
-        .replace('public/', '/')      // 移除public前缀
-      
-      // 确保路径以/开头
-      if (!imagePath.startsWith('/')) {
-        imagePath = '/' + imagePath
-      }
-    }
-    return { ...anime, image: imagePath }
-  })
-}
 
 const addCategory = () => {
   if (newCategory.value.trim()) {
@@ -148,96 +128,56 @@ const cancelEdit = (index) => {
 
 const applyBatchCategory = () => {
   if (!batchCategory.value) {
-    alert('请先选择分类')
+    alert('请选择分类')
     return
   }
   
-  selectedAnimes.value.forEach(animeId => {
-    const anime = allAnime.value.find(a => a.id === animeId)
+  selectedAnimes.value.forEach(id => {
+    const anime = allAnime.value.find(a => a.id === id)
     if (anime) {
       anime.category = batchCategory.value
     }
   })
   
-  // 使用通用函数保存到localStorage
-  if (saveAnimeList()) {
-    console.log(`批量分类完成，共更新 ${selectedAnimes.value.length} 部番剧`)
-  }
-  
-  // 清空选择
+  saveAnimeList()
   selectedAnimes.value = []
-  batchCategory.value = ''
-}
-
-const goToAnimeList = () => {
-  if (currentMonth.value === '2026.1') {
-    router.push({ name: 'Anime20261' })
-  } else {
-    router.push({ name: 'AnimeList' })
-  }
-}
-
-const goToRestricted = () => {
-  router.push({ name: 'Restricted' })
-}
-
-const goToAnimeEditor = () => {
-  // 从URL参数获取当前月份
-  router.push({ name: 'MonthEditor', params: { month: currentMonth.value } })
-}
-
-// 保存动漫列表到localStorage的通用函数
-const saveAnimeList = () => {
-  try {
-    localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(allAnime.value))
-    return true
-  } catch (error) {
-    console.error('保存番剧列表失败:', error)
-    alert('保存失败，请检查浏览器存储设置')
-    return false
-  }
 }
 
 const updateCategory = (anime) => {
-  if (saveAnimeList()) {
-    console.log(`更新番剧 ${anime.title} 的分类为 ${anime.category}`)
+  saveAnimeList()
+}
+
+const saveAnimeList = () => {
+  localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(allAnime.value))
+}
+
+const loadAnimeData = () => {
+  let savedAnime = JSON.parse(localStorage.getItem(`animeList${currentMonth.value}`)) || []
+  
+  // 使用标准工具函数修复图片路径
+  const fixedAnime = fixAnimeImagePaths(savedAnime)
+  allAnime.value = fixedAnime
+  
+  // 如果修复了路径，保存回localStorage
+  if (JSON.stringify(fixedAnime) !== JSON.stringify(savedAnime)) {
+    saveAnimeList()
   }
 }
 
-const saveAllChanges = () => {
-  try {
-    // 保存分类和动漫分类
-    saveCategories()
-    if (saveAnimeList()) {
-      alert('所有更改已保存')
-      console.log('所有分类更改已保存')
-    }
-  } catch (error) {
-    console.error('保存所有更改失败:', error)
-    alert('保存失败，请检查浏览器存储设置')
-  }
+const goToAnimeEditor = () => {
+  router.push({ name: 'MonthEditor', params: { month: currentMonth.value } })
+}
+
+const goToAnimeList = () => {
+  router.push({ name: 'AnimeMonth', params: { month: currentMonth.value } })
+}
+
+const goToRestricted = () => {
+  router.push({ name: 'RestrictedView' })
 }
 
 onMounted(() => {
-  try {
-    // 从localStorage加载特定月份的番剧分类
-    const savedAnime = JSON.parse(localStorage.getItem(`animeList${currentMonth.value}`))
-    if (savedAnime) {
-      // 修复图片路径
-      const fixedAnime = fixImagePaths(savedAnime)
-      allAnime.value = fixedAnime
-      // 如果修复了路径，保存回localStorage
-      if (JSON.stringify(fixedAnime) !== JSON.stringify(savedAnime)) {
-        saveAnimeList()
-      }
-    } else {
-      // 只在没有保存数据时初始化空数组
-      allAnime.value = []
-    }
-  } catch (error) {
-    console.error('加载番剧分类失败:', error)
-    alert('加载分类失败，请检查浏览器存储设置')
-  }
+  loadAnimeData()
 })
 </script>
 

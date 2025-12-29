@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
   <div class="restricted-container">
     <div class="restricted-content">
       <h1>欢迎使用动漫管理系统</h1>
@@ -28,33 +28,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { fixAnimeImagePaths } from '../utils/imageMapper'
 
 const router = useRouter()
 const animeList = ref([])
 const filteredAnime = ref([])
 const categories = ref([])
 const selectedCategory = ref('')
-
-// 修复图片路径
-const fixImagePaths = (animeList) => {
-  return animeList.map(anime => {
-    let imagePath = anime.image
-    // 修复错误的路径格式
-    if (imagePath) {
-      // 使用链式调用简化路径处理
-      imagePath = imagePath
-        .replace('/cmdyz123/', '/')  // 移除错误的用户名前缀
-        .replace('/anime123/', '/')   // 移除anime123前缀
-        .replace('public/', '/')      // 移除public前缀
-      
-      // 确保路径以/开头
-      if (!imagePath.startsWith('/')) {
-        imagePath = '/' + imagePath
-      }
-    }
-    return { ...anime, image: imagePath }
-  })
-}
 
 const loadAnimeData = () => {
   // 加载所有月份的动漫数据
@@ -66,7 +46,7 @@ const loadAnimeData = () => {
     if (monthData) {
       const monthAnime = JSON.parse(monthData)
       // 修复图片路径
-      const fixedAnime = fixImagePaths(monthAnime)
+      const fixedAnime = fixAnimeImagePaths(monthAnime)
       allAnime.push(...fixedAnime)
       // 更新localStorage中的数据
       localStorage.setItem(`animeList${month}`, JSON.stringify(fixedAnime))
@@ -203,3 +183,4 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 </style>
+
