@@ -80,18 +80,12 @@ const fixImagePaths = (animeList) => {
     let imagePath = anime.image
     // 修复错误的路径格式
     if (imagePath) {
-      // 移除错误用户名前缀
-      if (imagePath.startsWith('/cmdyz123/')) {
-        imagePath = imagePath.replace('/cmdyz123/', '/')
-      }
-      // 移除/anime123/前缀
-      if (imagePath.startsWith('/anime123/')) {
-        imagePath = imagePath.replace('/anime123/', '/')
-      }
-      // 移除public/前缀
-      if (imagePath.startsWith('public/')) {
-        imagePath = imagePath.replace('public/', '/')
-      }
+      // 使用链式调用简化路径处理
+      imagePath = imagePath
+        .replace('/cmdyz123/', '/')  // 移除错误的用户名前缀
+        .replace('/anime123/', '/')   // 移除anime123前缀
+        .replace('public/', '/')      // 移除public前缀
+      
       // 确保路径以/开头
       if (!imagePath.startsWith('/')) {
         imagePath = '/' + imagePath
@@ -128,7 +122,7 @@ const loadAnimeList = () => {
       { id: 12, title: '忍者和极道', info: '(全12话) 环大陆', image: '/images/2025.10/renzhe.jpg' },
       { id: 13, title: '无职英雄', info: '(全12话) 港台', image: '/images/2025.10/wuzhi.jpg' },
       { id: 14, title: '妖怪旅馆营业中 第2期', info: '(全12话) 港台', image: '/images/2025.10/yaoguai.jpg' },
-      { id: 15, title: 'Let\'s Play 充满挑战的人生', info: '(全12话) 港台', image: '/images/2025.10/Let‘s play .jpg' },
+      { id: 15, title: 'Let\'s Play 充满挑战的人生', info: '(全12话) 港台', image: '/images/2025.10/Let`s play.jpg' },
       { id: 16, title: '绝妙舞步', info: '(全12话) 环大陆', image: '/images/2025.10/jmwubu.jpg' },
       { id: 17, title: '转生恶女的黑历史', info: '(全12话) 港台', image: '/images/2025.10/heilishi.jpg' },
       { id: 18, title: '元祖小邦多利', info: '(泡面) 大陆', image: '/images/2025.10/bangduoli.jpg' },
