@@ -76,6 +76,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { getCorrectImagePath, fixAnimeImagePaths } from '../utils/imageMapper' // 同时导入两个函数
 
 const router = useRouter()
 const allAnime = ref([])
@@ -89,22 +90,8 @@ const goBack = () => {
   router.back()
 }
 
-// 统一图片路径处理
-const fixImagePaths = (animeList) => {
-  return animeList.map(anime => {
-    let imagePath = anime.image
-    if (imagePath) {
-      // 确保路径正确格式
-      imagePath = imagePath.replace(/^public\//, '/') // 移除public前缀
-      if (!imagePath.startsWith('/')) {
-        imagePath = '/' + imagePath
-      }
-      // 标准化文件名格式
-      imagePath = imagePath.replace(/\/Let[\'\`]s\s+play\s*\.jpg$/i, '/Let\'s play .jpg')
-    }
-    return { ...anime, image: imagePath }
-  })
-}
+// 统一图片路径处理 - 使用工具函数
+const fixImagePaths = fixAnimeImagePaths
 
 const loadWatchStatus = () => {
   // 加载所有月份的动漫数据

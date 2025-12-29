@@ -29,7 +29,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted, computed } from 'vue'
-import { getCorrectImagePath } from '../utils/imageMapper'  // 导入修复函数
+import { getCorrectImagePath, fixAnimeImagePaths } from '../utils/imageMapper'  // 同时导入两个函数
 
 const router = useRouter()
 const route = useRoute()
@@ -81,7 +81,7 @@ const loadAnimeCategories = () => {
   
   // 更新所有动漫的分类和修复图片路径
   const updateAnimeWithCategories = (animeList) => {
-      return animeList.map(anime => {
+      let updatedList = animeList.map(anime => {
         const savedAnime = savedAnimeList.find(s => s.id === anime.id)
         return { 
           ...anime, 
@@ -89,6 +89,8 @@ const loadAnimeCategories = () => {
           image: getCorrectImagePath(anime.image)  // 修复图片路径
         }
       })
+      // 修复图片路径
+      return fixAnimeImagePaths(updatedList)
     }
     
     allAnime.value = updateAnimeWithCategories(savedAnimeList)

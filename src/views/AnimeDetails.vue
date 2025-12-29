@@ -27,21 +27,72 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
-import { ref, onMounted } from 'vue'
-import { getCorrectImagePath } from '../utils/imageMapper' // 导入统一的图片路径修复函数
+import { onMounted, ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { getCorrectImagePath } from '../utils/imageMapper'
+import { getAnime, updateAnime } from '../utils/storage'
+import { fixAnimeImagePaths } from '../utils/imageMapper'
 
 const route = useRoute()
-
-// 解析并修复图片路径
+const router = useRouter()
+const animeId = route.params.id
 const animeData = JSON.parse(route.query.anime)
+
+// 使用ref创建响应式数据
 const anime = ref({
   ...animeData,
   image: getCorrectImagePath(animeData.image) // 修复图片路径
 })
 
+// 定义其他响应式数据
+const editingField = ref(null)
+const editingValue = ref('')
 const currentStatus = ref('未看')
 
+// 切换编辑模式
+const toggleEdit = (field) => {
+  if (editingField.value === field) {
+    // 保存修改
+    anime.value[field] = editingValue.value
+    
+    // 更新localStorage
+    const savedAnimeList = JSON.parse(localStorage.getItem('animeList2025.10')) || []
+    const animeIndex = savedAnimeList.findIndex(a => a.id === anime.value.id)
+    
+    if (animeIndex !== -1) {
+      savedAnimeList[animeIndex] = anime.value
+      localStorage.setItem('animeList2025.10', JSON.stringify(savedAnimeList))
+    }
+    
+    // 退出编辑模式
+    editingField.value = null
+  } else {
+    // 进入编辑模式
+    editingField.value = field
+    editingValue.value = anime.value[field]
+  }
+}
+
+// 计算属性：格式化动画信息
+const formattedInfo = computed(() => {
+  return anime.value.info.replace(/([()])/g, '<span class="info-bracket">$1</span>')
+})
+
+// 返回列表页面
+const goBack = () => {
+  router.push({ name: 'AnimeList' })
+}
+
+// 监听路由变化，更新当前显示的动画信息
+const updateAnimeInfo = () => {
+  const currentAnimeData = JSON.parse(route.query.anime)
+  anime.value = {
+    ...currentAnimeData,
+    image: getCorrectImagePath(currentAnimeData.image) // 修复图片路径
+  }
+}
+
+// 获取动画描述
 const getDescription = (id) => {
   const descriptions = {
     4: 'このクラス、個性的すぎる！人気漫画『銀魂』番外編『銀魂3年Z組銀八先生』のスピンオフ小説をもとにアニメ化！「銀魂3年Z組銀八先生」として銀魂をまるごと一つのアニメとして展開する。銀魂学級3年Z組、このクラスに通うのは、ドルオタ、ゴロイン、スニーカー、マヨラー、ドSキャンキーなど、「銀魂」から飛び出したキャラクターたち。そして高校生とは思えない強烈な生徒たち、だらしない白衣と死んだ魚のような目をした担任教師・坂田銀八のもとに、一筋縄ではいかない事件がいつも発生！舞台は銀大！陰キャも陰キャも関係なく、銀魂流の青春がここにある！',
@@ -54,6 +105,7 @@ const getDescription = (id) => {
   return descriptions[id] || 'この作品の詳細は準備中です。'
 }
 
+// 设置观看状态
 const setStatus = (status) => {
   currentStatus.value = status
   // 保存到localStorage
@@ -62,6 +114,7 @@ const setStatus = (status) => {
   localStorage.setItem('animeStatuses', JSON.stringify(statuses))
 }
 
+// 加载观看状态
 const loadStatus = () => {
   const statuses = JSON.parse(localStorage.getItem('animeStatuses')) || {}
   if (statuses[anime.value.id]) {

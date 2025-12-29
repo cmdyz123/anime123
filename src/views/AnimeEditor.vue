@@ -56,7 +56,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
-import { getCorrectImagePath } from '../utils/imageMapper' // 导入统一的图片路径修复函数
+import { getCorrectImagePath, fixAnimeImagePaths } from '../utils/imageMapper' // 同时导入两个函数
 
 const router = useRouter()
 const route = useRoute()
@@ -423,3 +423,4 @@ onMounted(() => {
   background: #d35400;
 }
 </style>
+

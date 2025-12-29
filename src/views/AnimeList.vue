@@ -29,7 +29,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
-import { getCorrectImagePath } from '../utils/imageMapper' // 导入统一的图片路径修复函数
+import { getCorrectImagePath, fixAnimeImagePaths } from '../utils/imageMapper' // 同时导入两个函数
 
 const router = useRouter()
 
@@ -73,7 +73,7 @@ const allAnime = ref(savedAnime || [
   { id: 12, title: '忍者和极道', info: '(全12话) 环大陆', image: '/images/2025.10/renzhe.jpg', category: '' },
   { id: 13, title: '无职英雄', info: '(全12话) 港台', image: '/images/2025.10/wuzhi.jpg', category: '' },
   { id: 14, title: '妖怪旅馆营业中 第2期', info: '(全12话) 港台', image: '/images/2025.10/yaoguai.jpg', category: '' },
-  { id: 15, title: 'Let\'s Play 充满挑战的人生', info: '(全12话) 港台', image: '/images/2025.10/Let\'s play .jpg', category: '' },
+  { id: 15, title: 'Let\'s Play 充满挑战的人生', info: '(全12话) 港台', image: '/images/2025.10/Let`s play .jpg', category: '' },
   { id: 16, title: '绝妙舞步', info: '(全12话) 环大陆', image: '/images/2025.10/jmwubu.jpg', category: '' },
   { id: 17, title: '转生恶女的黑历史', info: '(全12话) 港台', image: '/images/2025.10/heilishi.jpg', category: '' },
   { id: 18, title: '元祖小邦多利', info: '(泡面) 大陆', image: '/images/2025.10/bangduoli.jpg', category: '' },

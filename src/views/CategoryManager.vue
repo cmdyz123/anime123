@@ -66,159 +66,148 @@
 
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
-import { ref, onMounted } from 'vue'
-import { getCorrectImagePath } from '../utils/imageMapper' // 导入统一的图片路径修复函数
+import { ref, onMounted, watch } from 'vue'
+import { getCorrectImagePath, fixAnimeImagePaths } from '../utils/imageMapper' // 同时导入两个函数
 
 const router = useRouter()
 const route = useRoute()
 
-const userRole = ref(localStorage.getItem('userRole') || 'user')
+// 从URL参数获取月份信息
 const currentMonth = ref(route.params.month || '2025.10')
 
-const categories = ref(JSON.parse(localStorage.getItem(`animeCategories${currentMonth.value}`)) || [
-  { name: '原创动画' },
-  { name: '动画官网' },
-  { name: 'PV' },
-  { name: '先行画面' }
-])
-
-const newCategory = ref('')
+// 定义响应式数据
+const categories = ref([])
+const newCategoryName = ref('')
 const allAnime = ref([])
-const editingIndex = ref(-1)
-const originalName = ref('')
-const selectedAnimes = ref([])
-const batchCategory = ref('')
+const selectedAnime = ref([])
+const savedAnime = ref([])
 
-const addCategory = () => {
-  if (newCategory.value.trim()) {
-    categories.value.push({ name: newCategory.value.trim() })
-    newCategory.value = ''
-    saveCategories()
-  }
+// 跳转到动漫详情页面
+const goToDetails = (anime) => {
+  router.push({ name: 'AnimeDetails', params: { id: anime.id }, query: { anime: JSON.stringify(anime) } })
 }
 
-const deleteCategory = (index) => {
-  categories.value.splice(index, 1)
-  saveCategories()
-}
-
-const saveCategories = () => {
-  localStorage.setItem(`animeCategories${currentMonth.value}`, JSON.stringify(categories.value))
-}
-
-const startEdit = (index) => {
-  editingIndex.value = index
-  originalName.value = categories.value[index].name
-}
-
-const saveEdit = (index) => {
-  if (categories.value[index].name.trim()) {
-    editingIndex.value = -1
-    saveCategories()
-  } else {
-    categories.value[index].name = originalName.value
-    editingIndex.value = -1
-  }
-}
-
-const cancelEdit = (index) => {
-  categories.value[index].name = originalName.value
-  editingIndex.value = -1
-}
-
-const applyBatchCategory = () => {
-  if (!batchCategory.value) {
-    alert('请先选择分类')
-    return
-  }
-  
-  selectedAnimes.value.forEach(animeId => {
-    const anime = allAnime.value.find(a => a.id === animeId)
-    if (anime) {
-      anime.category = batchCategory.value
-    }
-  })
-  
-  // 使用通用函数保存到localStorage
-  if (saveAnimeList()) {
-    console.log(`批量分类完成，共更新 ${selectedAnimes.value.length} 部番剧`)
-  }
-  
-  // 清空选择
-  selectedAnimes.value = []
-  batchCategory.value = ''
-}
-
+// 跳转到动漫列表页面
 const goToAnimeList = () => {
   if (currentMonth.value === '2026.1') {
     router.push({ name: 'Anime20261' })
   } else {
-    router.push({ name: 'AnimeList' })
+    router.push({ name: 'AnimeMonth', params: { month: currentMonth.value } })
   }
 }
 
-const goToRestricted = () => {
-  router.push({ name: 'Restricted' })
-}
-
+// 跳转到动漫编辑页面
 const goToAnimeEditor = () => {
-  // 从URL参数获取当前月份
   router.push({ name: 'MonthEditor', params: { month: currentMonth.value } })
 }
 
-// 保存动漫列表到localStorage的通用函数
-const saveAnimeList = () => {
+// 加载动漫数据
+const loadAnimeData = () => {
   try {
-    localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(allAnime.value))
-    return true
-  } catch (error) {
-    console.error('保存番剧列表失败:', error)
-    return false
-  }
-}
-
-const updateCategory = (anime) => {
-  if (saveAnimeList()) {
-    console.log(`更新番剧 ${anime.title} 的分类为 ${anime.category}`)
-  }
-}
-
-const saveAllChanges = () => {
-  try {
-    // 保存分类和动漫分类
-    saveCategories()
-    if (saveAnimeList()) {
-      alert('所有更改已保存')
-      console.log('所有分类更改已保存')
+    // 从localStorage加载动漫列表
+    const savedAnimeList = JSON.parse(localStorage.getItem(`animeList${currentMonth.value}`)) || []
+    
+    // 修复图片路径
+    const fixedAnimeList = savedAnimeList.map(anime => ({
+      ...anime,
+      image: getCorrectImagePath(anime.image)
+    }))
+    
+    // 如果有修复操作，更新localStorage
+    if (JSON.stringify(fixedAnimeList) !== JSON.stringify(savedAnimeList)) {
+      localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(fixedAnimeList))
+      savedAnime.value = fixedAnimeList
+    } else {
+      savedAnime.value = savedAnimeList
     }
+    
+    // 加载分类信息
+    const savedCategories = JSON.parse(localStorage.getItem(`animeCategories${currentMonth.value}`)) || []
+    categories.value = savedCategories
+    
+    // 修复所有动漫的图片路径
+    allAnime.value = fixAnimeImagePaths(savedAnimeList)
   } catch (error) {
-    console.error('保存所有更改失败:', error)
-    alert('保存失败，请检查浏览器存储设置')
+    console.error('加载动漫数据时出错:', error)
   }
 }
 
+// 添加新分类
+const addCategory = () => {
+  if (newCategoryName.value.trim() === '') return
+  
+  const newCategory = { name: newCategoryName.value.trim() }
+  categories.value.push(newCategory)
+  
+  // 保存分类到localStorage
+  localStorage.setItem(`animeCategories${currentMonth.value}`, JSON.stringify(categories.value))
+  
+  // 清空输入框
+  newCategoryName.value = ''
+}
+
+// 删除分类
+const deleteCategory = (categoryName) => {
+  categories.value = categories.value.filter(category => category.name !== categoryName)
+  
+  // 更新所有使用该分类的动漫
+  savedAnime.value.forEach(anime => {
+    if (anime.category === categoryName) {
+      anime.category = ''
+    }
+  })
+  
+  // 保存更新到localStorage
+  localStorage.setItem(`animeCategories${currentMonth.value}`, JSON.stringify(categories.value))
+  localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(savedAnime.value))
+}
+
+// 批量应用分类
+const selectedCategoryToApply = ref('')
+
+const applyBatchCategory = () => {
+  if (!selectedCategoryToApply.value) return
+  
+  selectedAnime.value.forEach(animeId => {
+    const anime = savedAnime.value.find(a => a.id === animeId)
+    if (anime) {
+      anime.category = selectedCategoryToApply.value
+    }
+  })
+  
+  // 保存更新到localStorage
+  localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(savedAnime.value))
+  
+  // 清空选中的动漫和分类
+  selectedAnime.value = []
+  selectedCategoryToApply.value = ''
+  
+  // 跳转到列表页面
+  goToAnimeList()
+}
+
+// 切换动漫选中状态
+const toggleAnimeSelection = (animeId) => {
+  const index = selectedAnime.value.indexOf(animeId)
+  if (index !== -1) {
+    selectedAnime.value.splice(index, 1)
+  } else {
+    selectedAnime.value.push(animeId)
+  }
+}
+
+// 监听月份变化，重新加载数据
+watch(() => route.params.month, (newMonth) => {
+  currentMonth.value = newMonth || '2025.10'
+  loadAnimeData()
+})
+
+// 组件挂载时加载数据
 onMounted(() => {
   try {
-    // 从localStorage加载特定月份的番剧分类
-    const savedAnime = JSON.parse(localStorage.getItem(`animeList${currentMonth.value}`))
-    if (savedAnime) {
-      // 修复图片路径
-      const fixedAnime = savedAnime.map(anime => ({
-        ...anime,
-        image: getCorrectImagePath(anime.image)
-      }))
-      allAnime.value = fixedAnime
-      // 如果修复了路径，保存回localStorage
-      if (JSON.stringify(fixedAnime) !== JSON.stringify(savedAnime)) {
-        saveAnimeList()
-      }
-    } else {
-      // 只在没有保存数据时初始化空数组
-      allAnime.value = []
-    }
+    loadAnimeData()
   } catch (error) {
-    console.error('加载番剧分类失败:', error)
-    alert('加载分类失败，请检查浏览器存储设置')
+    console.error('加载数据出错:', error)
   }
 })
 </script>
