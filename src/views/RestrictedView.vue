@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
   <div class="restricted-container">
     <div class="restricted-content">
       <h1>欢迎使用动漫管理系统</h1>
@@ -41,18 +41,12 @@ const fixImagePaths = (animeList) => {
     let imagePath = anime.image
     // 修复错误的路径格式
     if (imagePath) {
-      // 移除错误用户名前缀
-      if (imagePath.startsWith('/cmdyz123/')) {
-        imagePath = imagePath.replace('/cmdyz123/', '/')
-      }
-      // 移除/anime123/前缀
-      if (imagePath.startsWith('/anime123/')) {
-        imagePath = imagePath.replace('/anime123/', '/')
-      }
-      // 移除public/前缀
-      if (imagePath.startsWith('public/')) {
-        imagePath = imagePath.replace('public/', '/')
-      }
+      // 使用链式调用简化路径处理
+      imagePath = imagePath
+        .replace('/cmdyz123/', '/')  // 移除错误的用户名前缀
+        .replace('/anime123/', '/')   // 移除anime123前缀
+        .replace('public/', '/')      // 移除public前缀
+      
       // 确保路径以/开头
       if (!imagePath.startsWith('/')) {
         imagePath = '/' + imagePath

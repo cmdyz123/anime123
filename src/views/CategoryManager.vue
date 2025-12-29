@@ -94,18 +94,12 @@ const fixImagePaths = (animeList) => {
     let imagePath = anime.image
     // 修复错误的路径格式
     if (imagePath) {
-      // 移除错误的用户名前缀
-      if (imagePath.startsWith('/cmdyz123/')) {
-        imagePath = imagePath.replace('/cmdyz123/', '/')
-      }
-      // 移除/anime123/前缀（如果有）以便重新添加正确的
-      if (imagePath.startsWith('/anime123/')) {
-        imagePath = imagePath.replace('/anime123/', '/')
-      }
-      // 移除public/前缀
-      if (imagePath.startsWith('public/')) {
-        imagePath = imagePath.replace('public/', '/')
-      }
+      // 使用链式调用简化路径处理
+      imagePath = imagePath
+        .replace('/cmdyz123/', '/')  // 移除错误的用户名前缀
+        .replace('/anime123/', '/')   // 移除anime123前缀
+        .replace('public/', '/')      // 移除public前缀
+      
       // 确保路径以/开头
       if (!imagePath.startsWith('/')) {
         imagePath = '/' + imagePath
@@ -165,9 +159,10 @@ const applyBatchCategory = () => {
     }
   })
   
-  // 保存到localStorage
-  localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(allAnime.value))
-  console.log(`批量分类完成，共更新 ${selectedAnimes.value.length} 部番剧`)
+  // 使用通用函数保存到localStorage
+  if (saveAnimeList()) {
+    console.log(`批量分类完成，共更新 ${selectedAnimes.value.length} 部番剧`)
+  }
   
   // 清空选择
   selectedAnimes.value = []
@@ -191,14 +186,21 @@ const goToAnimeEditor = () => {
   router.push({ name: 'MonthEditor', params: { month: currentMonth.value } })
 }
 
-const updateCategory = (anime) => {
+// 保存动漫列表到localStorage的通用函数
+const saveAnimeList = () => {
   try {
-    // 保存所有动漫的分类到localStorage
     localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(allAnime.value))
-    console.log(`更新番剧 ${anime.title} 的分类为 ${anime.category}`)
+    return true
   } catch (error) {
-    console.error('保存番剧分类失败:', error)
-    alert('保存分类失败，请检查浏览器存储设置')
+    console.error('保存番剧列表失败:', error)
+    alert('保存失败，请检查浏览器存储设置')
+    return false
+  }
+}
+
+const updateCategory = (anime) => {
+  if (saveAnimeList()) {
+    console.log(`更新番剧 ${anime.title} 的分类为 ${anime.category}`)
   }
 }
 
@@ -206,9 +208,10 @@ const saveAllChanges = () => {
   try {
     // 保存分类和动漫分类
     saveCategories()
-    localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(allAnime.value))
-    alert('所有更改已保存')
-    console.log('所有分类更改已保存')
+    if (saveAnimeList()) {
+      alert('所有更改已保存')
+      console.log('所有分类更改已保存')
+    }
   } catch (error) {
     console.error('保存所有更改失败:', error)
     alert('保存失败，请检查浏览器存储设置')
@@ -225,10 +228,10 @@ onMounted(() => {
       allAnime.value = fixedAnime
       // 如果修复了路径，保存回localStorage
       if (JSON.stringify(fixedAnime) !== JSON.stringify(savedAnime)) {
-        localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(fixedAnime))
+        saveAnimeList()
       }
     } else {
-      // 只在没有保存数据时初始化空数组，不再加载默认的62部番剧
+      // 只在没有保存数据时初始化空数组
       allAnime.value = []
     }
   } catch (error) {
@@ -396,32 +399,7 @@ onMounted(() => {
   color: #333;
 }
 
-.category-form {
-  margin-bottom: 30px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.category-list {
-  margin-bottom: 30px;
-}
-
-.anime-category-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: 5px;
-  background: #f8f9fa;
-  border-radius: 4px;
-}
-
-.anime-category-item select {
-  padding: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
+/* 已在上面定义过的样式，此处删除重复定义 */
 
 .save-section {
   margin-top: 30px;
