@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿<template>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
   <div class="restricted-container">
     <div class="restricted-content">
       <h1>欢迎使用动漫管理系统</h1>
