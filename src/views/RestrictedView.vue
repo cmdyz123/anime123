@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<template>
   <div class="restricted-container">
     <div class="restricted-content">
       <h1>欢迎使用动漫管理系统</h1>
@@ -39,8 +39,24 @@ const selectedCategory = ref('')
 const fixImagePaths = (animeList) => {
   return animeList.map(anime => {
     let imagePath = anime.image
-    if (imagePath && (imagePath.includes('/anime123/') || imagePath.includes('public/'))) {
-      imagePath = imagePath.replace('/anime123/', '/').replace('public/', '/')
+    // 修复错误的路径格式
+    if (imagePath) {
+      // 移除错误用户名前缀
+      if (imagePath.startsWith('/cmdyz123/')) {
+        imagePath = imagePath.replace('/cmdyz123/', '/')
+      }
+      // 移除/anime123/前缀
+      if (imagePath.startsWith('/anime123/')) {
+        imagePath = imagePath.replace('/anime123/', '/')
+      }
+      // 移除public/前缀
+      if (imagePath.startsWith('public/')) {
+        imagePath = imagePath.replace('public/', '/')
+      }
+      // 确保路径以/开头
+      if (!imagePath.startsWith('/')) {
+        imagePath = '/' + imagePath
+      }
     }
     return { ...anime, image: imagePath }
   })
@@ -65,14 +81,14 @@ const loadAnimeData = () => {
       if (month === '2025.10') {
         // 使用2025.10目录下真实存在的图片
         allAnime.push(
-          { id: 1, title: '欢迎来到笑容不断的职场', info: '(全12话) 日本', image: `/images/2025.10/欢迎来到笑容不断的职场.jpg` },
-          { id: 2, title: '一拳超人第三期', info: '(全12话) 日本', image: `/images/2025.10/一拳超人第三期.jpg` }
+          { id: 1, title: '欢迎来到笑容不断的职场', info: '(全12话) 日本', image: `/images/2025.10/zhichang.jpg` },
+          { id: 2, title: '一拳超人第三期', info: '(全12话) 日本', image: `/images/2025.10/pangzi.jpg` }
         )
       } else if (month === '2026.1') {
         // 2026.1暂时使用2025.10的图片作为默认
         allAnime.push(
-          { id: 3, title: '王者天下第六期', info: '(全24话) 日本', image: `/images/2025.10/王者天下第六期.jpg` },
-          { id: 4, title: '致不灭的你第三期', info: '(全12话) 日本', image: `/images/2025.10/致不灭的你第三期.jpg` }
+          { id: 3, title: '王者天下第六期', info: '(全24话) 日本', image: `/images/2025.10/wangzhe.jpg` },
+          { id: 4, title: '致不灭的你第三期', info: '(全12话) 日本', image: `/images/2025.10/bumie.jpg` }
         )
       }
     }

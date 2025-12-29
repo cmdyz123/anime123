@@ -50,6 +50,10 @@ const fixImagePaths = (animeList) => {
     let imagePath = anime.image
     // 修复错误的路径格式
     if (imagePath) {
+      // 移除错误用户名前缀
+      if (imagePath.startsWith('/cmdyz123/')) {
+        imagePath = imagePath.replace('/cmdyz123/', '/')
+      }
       // 移除/anime123/前缀
       if (imagePath.startsWith('/anime123/')) {
         imagePath = imagePath.replace('/anime123/', '/')
