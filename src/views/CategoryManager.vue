@@ -67,6 +67,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import { getCorrectImagePath } from '../utils/imageMapper' // 导入统一的图片路径修复函数
 
 const router = useRouter()
 const route = useRoute()
@@ -87,27 +88,6 @@ const editingIndex = ref(-1)
 const originalName = ref('')
 const selectedAnimes = ref([])
 const batchCategory = ref('')
-
-// 修复图片路径函数
-const fixImagePaths = (animeList) => {
-  return animeList.map(anime => {
-    let imagePath = anime.image
-    // 修复错误的路径格式
-    if (imagePath) {
-      // 使用链式调用简化路径处理
-      imagePath = imagePath
-        .replace('/cmdyz123/', '/')  // 移除错误的用户名前缀
-        .replace('/anime123/', '/')   // 移除anime123前缀
-        .replace('public/', '/')      // 移除public前缀
-      
-      // 确保路径以/开头
-      if (!imagePath.startsWith('/')) {
-        imagePath = '/' + imagePath
-      }
-    }
-    return { ...anime, image: imagePath }
-  })
-}
 
 const addCategory = () => {
   if (newCategory.value.trim()) {
@@ -193,7 +173,6 @@ const saveAnimeList = () => {
     return true
   } catch (error) {
     console.error('保存番剧列表失败:', error)
-    alert('保存失败，请检查浏览器存储设置')
     return false
   }
 }
@@ -224,7 +203,10 @@ onMounted(() => {
     const savedAnime = JSON.parse(localStorage.getItem(`animeList${currentMonth.value}`))
     if (savedAnime) {
       // 修复图片路径
-      const fixedAnime = fixImagePaths(savedAnime)
+      const fixedAnime = savedAnime.map(anime => ({
+        ...anime,
+        image: getCorrectImagePath(anime.image)
+      }))
       allAnime.value = fixedAnime
       // 如果修复了路径，保存回localStorage
       if (JSON.stringify(fixedAnime) !== JSON.stringify(savedAnime)) {

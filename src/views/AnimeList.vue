@@ -29,6 +29,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import { getCorrectImagePath } from '../utils/imageMapper' // 导入统一的图片路径修复函数
 
 const router = useRouter()
 
@@ -44,37 +45,16 @@ const goToAnimeEditor = () => {
   router.push({ name: 'MonthEditor', params: { month: '2025.10' } })
 }
 
-// 修复localStorage中的图片路径
-const fixImagePaths = (animeList) => {
-  return animeList.map(anime => {
-    let imagePath = anime.image
-    // 修复错误的路径格式
-    if (imagePath) {
-      // 统一处理路径格式
-      imagePath = imagePath
-        .replace('public/', '/')      // 移除public前缀
-      
-      // 确保路径以/开头
-      if (!imagePath.startsWith('/')) {
-        imagePath = '/' + imagePath
-      }
-      
-      // 修正具体文件名中的特殊字符和空格问题
-      imagePath = imagePath
-        .replace('/Let\'s play.jpg', '/Let\'s play .jpg')
-        .replace('/let\'s play.jpg', '/Let\'s play .jpg')
-        .replace('/let\'s play .jpg', '/Let\'s play .jpg')
-    }
-    return { ...anime, image: imagePath }
-  })
-}
-
 // 从localStorage加载动漫列表
 let savedAnime = JSON.parse(localStorage.getItem('animeList2025.10'))
 
 // 修复savedAnime中的图片路径
 if (savedAnime) {
-  savedAnime = fixImagePaths(savedAnime)
+  const fixedAnime = savedAnime.map(anime => ({
+    ...anime,
+    image: getCorrectImagePath(anime.image)
+  }))
+  savedAnime = fixedAnime
   // 如果有修复操作，更新localStorage
   localStorage.setItem('animeList2025.10', JSON.stringify(savedAnime))
 }
@@ -163,7 +143,10 @@ const loadAnimeCategories = () => {
   let savedAnimeList = JSON.parse(localStorage.getItem('animeList2025.10')) || []
   
   // 修复savedAnimeList中的图片路径
-  const fixedAnimeList = fixImagePaths(savedAnimeList)
+  const fixedAnimeList = savedAnimeList.map(anime => ({
+    ...anime,
+    image: getCorrectImagePath(anime.image)
+  }))
   
   // 如果有修复操作，更新localStorage
   if (JSON.stringify(fixedAnimeList) !== JSON.stringify(savedAnimeList)) {

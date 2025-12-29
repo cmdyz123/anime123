@@ -89,6 +89,23 @@ const goBack = () => {
   router.back()
 }
 
+// 统一图片路径处理
+const fixImagePaths = (animeList) => {
+  return animeList.map(anime => {
+    let imagePath = anime.image
+    if (imagePath) {
+      // 确保路径正确格式
+      imagePath = imagePath.replace(/^public\//, '/') // 移除public前缀
+      if (!imagePath.startsWith('/')) {
+        imagePath = '/' + imagePath
+      }
+      // 标准化文件名格式
+      imagePath = imagePath.replace(/\/Let[\'\`]s\s+play\s*\.jpg$/i, '/Let\'s play .jpg')
+    }
+    return { ...anime, image: imagePath }
+  })
+}
+
 const loadWatchStatus = () => {
   // 加载所有月份的动漫数据
   const months = ['2025.10', '2026.1']
@@ -97,7 +114,9 @@ const loadWatchStatus = () => {
   months.forEach(month => {
     const monthData = localStorage.getItem(`animeList${month}`)
     if (monthData) {
-      const monthAnime = JSON.parse(monthData)
+      let monthAnime = JSON.parse(monthData)
+      // 修复图片路径
+      monthAnime = fixImagePaths(monthAnime)
       allAnimeData.push(...monthAnime)
     }
   })

@@ -29,9 +29,17 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import { getCorrectImagePath } from '../utils/imageMapper' // 导入统一的图片路径修复函数
 
 const route = useRoute()
-const anime = JSON.parse(route.query.anime)
+
+// 解析并修复图片路径
+const animeData = JSON.parse(route.query.anime)
+const anime = ref({
+  ...animeData,
+  image: getCorrectImagePath(animeData.image) // 修复图片路径
+})
+
 const currentStatus = ref('未看')
 
 const getDescription = (id) => {
@@ -50,14 +58,14 @@ const setStatus = (status) => {
   currentStatus.value = status
   // 保存到localStorage
   const statuses = JSON.parse(localStorage.getItem('animeStatuses')) || {}
-  statuses[anime.id] = status
+  statuses[anime.value.id] = status
   localStorage.setItem('animeStatuses', JSON.stringify(statuses))
 }
 
 const loadStatus = () => {
   const statuses = JSON.parse(localStorage.getItem('animeStatuses')) || {}
-  if (statuses[anime.id]) {
-    currentStatus.value = statuses[anime.id]
+  if (statuses[anime.value.id]) {
+    currentStatus.value = statuses[anime.value.id]
   }
 }
 

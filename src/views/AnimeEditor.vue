@@ -56,6 +56,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import { getCorrectImagePath } from '../utils/imageMapper' // 导入统一的图片路径修复函数
 
 const router = useRouter()
 const route = useRoute()
@@ -74,37 +75,15 @@ const editingIndex = ref(-1)
 const originalAnime = ref({})
 const currentMonth = ref(route.params.month || '2025.10')
 
-// 修复图片路径函数
-const fixImagePaths = (animeList) => {
-  return animeList.map(anime => {
-    let imagePath = anime.image
-    // 修复错误的路径格式
-    if (imagePath) {
-      // 统一处理路径格式
-      imagePath = imagePath
-        .replace('public/', '/')      // 移除public前缀
-      
-      // 确保路径以/开头
-      if (!imagePath.startsWith('/')) {
-        imagePath = '/' + imagePath
-      }
-      
-      // 修正具体文件名中的特殊字符和空格问题
-      imagePath = imagePath
-        .replace('/Let\`s play.jpg', '/Let\'s play .jpg')
-        .replace('/Let\'s play.jpg', '/Let\'s play .jpg')
-        .replace('/let\'s play.jpg', '/Let\'s play .jpg')
-        .replace('/let\'s play .jpg', '/Let\'s play .jpg')
-    }
-    return { ...anime, image: imagePath }
-  })
-}
-
+// 使用统一的图片路径处理函数
 const loadAnimeList = () => {
   const savedAnime = JSON.parse(localStorage.getItem(`animeList${currentMonth.value}`)) || []
   if (savedAnime.length > 0) {
     // 修复图片路径
-    const fixedAnime = fixImagePaths(savedAnime)
+    const fixedAnime = savedAnime.map(anime => ({
+      ...anime,
+      image: getCorrectImagePath(anime.image)
+    }))
     animeList.value = fixedAnime
     // 如果修复了路径，保存回localStorage
     if (JSON.stringify(fixedAnime) !== JSON.stringify(savedAnime)) {
@@ -127,7 +106,7 @@ const loadAnimeList = () => {
       { id: 12, title: '忍者和极道', info: '(全12话) 环大陆', image: '/images/2025.10/renzhe.jpg' },
       { id: 13, title: '无职英雄', info: '(全12话) 港台', image: '/images/2025.10/wuzhi.jpg' },
       { id: 14, title: '妖怪旅馆营业中 第2期', info: '(全12话) 港台', image: '/images/2025.10/yaoguai.jpg' },
-      { id: 15, title: 'Let\'s Play 充满挑战的人生', info: '(全12话) 港台', image: '/images/2025.10/Let\'s play .jpg' },
+      { id: 15, title: 'Let\'s Play 充满挑战的人生', info: '(全12话) 港台', image: '/images/2025.10/Let`s play .jpg' },
       { id: 16, title: '绝妙舞步', info: '(全12话) 环大陆', image: '/images/2025.10/jmwubu.jpg' },
       { id: 17, title: '转生恶女的黑历史', info: '(全12话) 港台', image: '/images/2025.10/heilishi.jpg' },
       { id: 18, title: '元祖小邦多利', info: '(泡面) 大陆', image: '/images/2025.10/bangduoli.jpg' },
@@ -176,6 +155,7 @@ const loadAnimeList = () => {
       { id: 61, title: '少女兵器想要成为家人', info: '(全12话) 环大陆', image: '/images/2025.10/nver.jpg' },
       { id: 62, title: '小手拒绝别碰我', info: '(全12话) 港台', image: '/images/2025.10/shouzhi.jpg' }
     ]
+    saveAnimeList()
   }
 }
 
@@ -183,21 +163,28 @@ const saveAnimeList = () => {
   localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(animeList.value))
 }
 
+// 添加动漫
 const addAnime = () => {
-  if (newAnime.value.title && newAnime.value.image) {
-    const newId = Math.max(...animeList.value.map(a => a.id), 0) + 1
-    animeList.value.push({
-      id: newId,
-      title: newAnime.value.title,
-      info: newAnime.value.info,
-      image: newAnime.value.image
-    })
-    saveAnimeList()
-    newAnime.value = { title: '', info: '', image: '' }
-    console.log('动漫添加成功')
-  } else {
-    alert('请填写标题和图片路径')
+  if (!newAnime.value.title || !newAnime.value.info) {
+    alert('请填写标题和信息')
+    return
   }
+  
+  const newId = Math.max(...animeList.value.map(a => a.id), 0) + 1
+  const animeToAdd = {
+    id: newId,
+    title: newAnime.value.title,
+    info: newAnime.value.info,
+    image: getCorrectImagePath(newAnime.value.image) || '', // 修复图片路径
+    category: ''
+  }
+  
+  animeList.value.push(animeToAdd)
+  saveAnimeList()
+  
+  // 清空表单
+  newAnime.value = { title: '', info: '', image: '' }
+  console.log('动漫添加成功')
 }
 
 const startEdit = (index) => {
@@ -205,14 +192,19 @@ const startEdit = (index) => {
   originalAnime.value = JSON.parse(JSON.stringify(animeList.value[index]))
 }
 
+// 保存编辑
 const saveEdit = (index) => {
-  if (animeList.value[index].title && animeList.value[index].image) {
-    editingIndex.value = -1
-    saveAnimeList()
-    console.log('动漫信息更新成功')
-  } else {
-    alert('请填写标题和图片路径')
+  if (!animeList.value[index].title || !animeList.value[index].info) {
+    alert('请填写标题和信息')
+    return
   }
+  
+  // 修复图片路径
+  animeList.value[index].image = getCorrectImagePath(animeList.value[index].image)
+  
+  editingIndex.value = -1
+  saveAnimeList()
+  console.log('动漫信息更新成功')
 }
 
 const cancelEdit = (index) => {

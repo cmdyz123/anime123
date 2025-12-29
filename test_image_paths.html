@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片路径修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .image-test {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        .image-test img {
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .path-info {
+            max-width: 300px;
+            word-break: break-all;
+            font-size: 12px;
+            color: #666;
+        }
+        .status {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>图片路径修复测试</h1>
+    
+    <div class="test-section">
+        <h2>1. 测试中文路径修复</h2>
+        <div class="image-test">
+            <img src="/anime123/images/2025.10/王者天下第六期.jpg" alt="王者天下第六期" id="test1">
+            <div class="path-info">原始路径: /anime123/images/2025.10/王者天下第六期.jpg</div>
+            <div class="status" id="status1">测试中...</div>
+        </div>
+        <div class="image-test">
+            <img src="/anime123/images/2025.10/间谍过家家第三期.jpg" alt="间谍过家家第三期" id="test2">
+            <div class="path-info">原始路径: /anime123/images/2025.10/间谍过家家第三期.jpg</div>
+            <div class="status" id="status2">测试中...</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 测试英文路径</h2>
+        <div class="image-test">
+            <img src="/anime123/images/2025.10/wangzhe.jpg" alt="wangzhe.jpg" id="test3">
+            <div class="path-info">路径: /anime123/images/2025.10/wangzhe.jpg</div>
+            <div class="status" id="status3">测试中...</div>
+        </div>
+        <div class="image-test">
+            <img src="/anime123/images/2025.10/saimaniang.jpg" alt="saimaniang.jpg" id="test4">
+            <div class="path-info">路径: /anime123/images/2025.10/saimaniang.jpg</div>
+            <div class="status" id="status4">测试中...</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 测试URL编码路径</h2>
+        <div class="image-test">
+            <img src="/anime123/images/2025.10/%E7%8E%8B%E8%80%85%E5%A4%A9%E4%B8%8B%E7%AC%AC%E5%85%AD%E6%9C%9F.jpg" alt="URL编码王者天下" id="test5">
+            <div class="path-info">路径: /anime123/images/2025.10/%E7%8E%8B%E8%80%85%E5%A4%A9%E4%B8%8B%E7%AC%AC%E5%85%AD%E6%9C%9F.jpg</div>
+            <div class="status" id="status5">测试中...</div>
+        </div>
+    </div>
+    
+    <script>
+        // 测试图片加载状态
+        const testImages = [
+            { id: 'test1', statusId: 'status1', desc: '中文路径直接访问' },
+            { id: 'test2', statusId: 'status2', desc: '中文路径直接访问2' },
+            { id: 'test3', statusId: 'status3', desc: '英文路径访问' },
+            { id: 'test4', statusId: 'status4', desc: '英文路径访问2' },
+            { id: 'test5', statusId: 'status5', desc: 'URL编码路径访问' }
+        ];
+        
+        testImages.forEach(test => {
+            const img = document.getElementById(test.id);
+            const status = document.getElementById(test.statusId);
+            
+            img.onload = () => {
+                status.textContent = `${test.desc}: 成功`;
+                status.className = 'status success';
+            };
+            
+            img.onerror = () => {
+                status.textContent = `${test.desc}: 失败`;
+                status.className = 'status error';
+            };
+        });
+    </script>
+</body>
+</html>
