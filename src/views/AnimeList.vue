@@ -44,60 +44,38 @@ const goToAnimeEditor = () => {
   router.push({ name: 'MonthEditor', params: { month: '2025.10' } })
 }
 
-// 从localStorage加载分类数据
-const loadAnimeCategories = () => {
-  const savedCategories = JSON.parse(localStorage.getItem('animeCategories2025.10'))
-  if (savedCategories) {
-    categories.value = savedCategories
-  }
-  
-  const savedAnimeList = JSON.parse(localStorage.getItem('animeList2025.10')) || []
-  
-  
-
-// 如果没有保存的数据，将默认数据保存到localStorage
-if (!savedAnime) {
-  localStorage.setItem('animeList2025.10', JSON.stringify(allAnime.value))
+// 修复localStorage中的图片路径
+const fixImagePaths = (animeList) => {
+  return animeList.map(anime => {
+    let imagePath = anime.image
+    // 修复错误的路径格式
+    if (imagePath) {
+      // 移除/anime123/前缀
+      if (imagePath.startsWith('/anime123/')) {
+        imagePath = imagePath.replace('/anime123/', '/')
+      }
+      // 移除public/前缀
+      if (imagePath.startsWith('public/')) {
+        imagePath = imagePath.replace('public/', '/')
+      }
+      // 确保路径以/开头
+      if (!imagePath.startsWith('/')) {
+        imagePath = '/' + imagePath
+      }
+    }
+    return { ...anime, image: imagePath }
+  })
 }
-
-// 更新所有动漫的分类
-const updateAnimeWithCategories = (animeList) => {
-    return animeList.map(anime => {
-      const savedAnime = savedAnimeList.find(s => s.id === anime.id)
-      return { ...anime, category: savedAnime?.category || '' }
-    })
-  }
-  
-  allAnime.value = updateAnimeWithCategories(allAnime.value)
-}
-
-// 分类筛选
-const categories = ref(JSON.parse(localStorage.getItem('animeCategories2025.10')) || [
-  { name: '原创动画' },
-  { name: '动画官网' },
-  { name: 'PV' },
-  { name: '先行画面' }
-])
-
-const selectedCategory = ref('')
-
-const filteredAnime = ref([])
-
-const filterAnime = () => {
-  if (!selectedCategory.value) {
-    filteredAnime.value = [...allAnime.value]
-  } else {
-    filteredAnime.value = allAnime.value.filter(anime => anime.category === selectedCategory.value)
-  }
-}
-
-onMounted(() => {
-  loadAnimeCategories()
-  filterAnime() // 初始化筛选
-})
 
 // 从localStorage加载动漫列表
-const savedAnime = JSON.parse(localStorage.getItem('animeList2025.10'))
+let savedAnime = JSON.parse(localStorage.getItem('animeList2025.10'))
+
+// 修复savedAnime中的图片路径
+if (savedAnime) {
+  savedAnime = fixImagePaths(savedAnime)
+  // 如果有修复操作，更新localStorage
+  localStorage.setItem('animeList2025.10', JSON.stringify(savedAnime))
+}
 const allAnime = ref(savedAnime || [
   { id: 1, title: '欢迎来到笑容不断的职场', info: '(全12话) 大陆', image: '/images/2025.10/欢迎来到笑容不断的职场.jpg', category: '' },
   { id: 2, title: '胖子与爱情以及过错', info: '(全13话) 港台', image: '/images/2025.10/胖子与爱情以及过错.jpg', category: '' },
@@ -163,62 +141,61 @@ const allAnime = ref(savedAnime || [
   { id: 62, title: '小手拒绝别碰我', info: '(全12话) 港台', image: '/images/2025.10/小手指君别碰我.jpg', category: '' }
 ])
 
-const thursday = ref([
-  { id: 18, title: '元祖小邦多利', info: '(泡面) 大陆', image: '/images/2025.10/元祖小邦多利.jpg', category: '' },
-  { id: 19, title: '笨拙至极的前辈即将崩坏', info: '(全12话) 港台', image: '/images/2025.10/笨拙至极的前辈.jpg', category: '' },
-  { id: 20, title: '星辰光辉更胜太阳', info: '(全12话) 环大陆', image: '/images/2025.10/星辰光辉更胜太阳.jpg', category: '' },
-  { id: 21, title: '想吃掉我的非人少女', info: '(全13话) 大陆/港台', image: '/images/2025.10/想吃掉我的非人少女.jpg', category: '' },
-  { id: 22, title: '永恒余晖', info: '(全13话) 港台', image: '/images/2025.10/永恒余晖.jpg', category: '' },
-  { id: 23, title: '双人单身露营', info: '(全24话) 港台', image: '/images/2025.10/双人单身露营.jpg', category: '' },
-  { id: 24, title: '恶食千金与狂犬公爵', info: '(全12话) 港台', image: '/images/2025.10/恶食千金与狂血公爵.jpg', category: '' },
-  { id: 25, title: '魔法药水救救我', info: '(全12话) 港台', image: '/images/2025.10/魔法药水救救我.jpg', category: '' }
+
+
+// 更新所有动漫的分类
+const updateAnimeWithCategories = (animeList, savedAnimeList) => {
+  return animeList.map(anime => {
+    const savedAnime = savedAnimeList.find(s => s.id === anime.id)
+    return { ...anime, category: savedAnime?.category || '' }
+  })
+}
+
+// 从localStorage加载分类数据
+const loadAnimeCategories = () => {
+  const savedCategories = JSON.parse(localStorage.getItem('animeCategories2025.10'))
+  if (savedCategories) {
+    categories.value = savedCategories
+  }
+  
+  let savedAnimeList = JSON.parse(localStorage.getItem('animeList2025.10')) || []
+  
+  // 修复savedAnimeList中的图片路径
+  const fixedAnimeList = fixImagePaths(savedAnimeList)
+  
+  // 如果有修复操作，更新localStorage
+  if (JSON.stringify(fixedAnimeList) !== JSON.stringify(savedAnimeList)) {
+    localStorage.setItem('animeList2025.10', JSON.stringify(fixedAnimeList))
+    savedAnimeList = fixedAnimeList
+  }
+  
+  allAnime.value = updateAnimeWithCategories(allAnime.value, savedAnimeList)
+}
+
+// 分类筛选
+const categories = ref(JSON.parse(localStorage.getItem('animeCategories2025.10')) || [
+  { name: '原创动画' },
+  { name: '动画官网' },
+  { name: 'PV' },
+  { name: '先行画面' }
 ])
 
-const friday = ref([
-  { id: 26, title: '桃源暗鬼', info: '(全24话) 港台', image: '/images/2025.10/桃园暗鬼.jpg', category: '' },
-  { id: 27, title: '凌君的XX即将崩坏', info: '(全26话) 环大陆', image: '/images/2025.10/渡君的xx即将崩坏.jpg', category: '' },
-  { id: 28, title: '百姓贵族 第3期', info: '(泡面) 港台', image: '/images/2025.10/百姓贵族第三期.jpg', category: '' },
-  { id: 29, title: '靠无限扭蛋复仇', info: '(全12话) 港台', image: '/images/2025.10/靠无限扭蛋复仇.jpg', category: '' },
-  { id: 30, title: '野原广志午餐的流派', info: '(泡面) 港台', image: '/images/2025.10/野原广志的午餐流派.jpg', category: '' },
-  { id: 31, title: '娑婆气', info: '(全13话) 大陆/港台', image: '/images/2025.10/婆娑气.jpg', category: '' },
-  { id: 32, title: '最后再拜托您一件事可以吗', info: '(全13话) 大陆/港台', image: '/images/2025.10/最后再拜托你一件事可以吗.jpg', category: '' },
-  { id: 33, title: 'SANDA', info: '(全12话) 环大陆', image: '/images/2025.10/SANDA.jpg', category: '' },
-  { id: 34, title: 'GANGLION', info: '(泡面)', image: '/images/2025.10/GANGLION.jpg', category: '' }
-])
+const selectedCategory = ref('')
 
-const saturday = ref([
-  { id: 35, title: '野生的最终BOSS出现了', info: '(全12话) 大陆/港台', image: '/images/2025.10/野生的最终BOSS出现了.jpg', category: '' },
-  { id: 36, title: '科学与冒险求生', info: '(全19话) 大陆', image: '/images/2025.10/科学x冒险求生第二期.jpg', category: '' },
-  { id: 37, title: '无口的柏田小姐与元气的太田君', info: '(全12话) 港台', image: '/images/2025.10/无口的柏田同学和元气的太田君.jpg', category: '' },
-  { id: 38, title: '婚戒物语 第2期', info: '(全13话) 港台', image: '/images/2025.10/婚戒物语第二期.jpg', category: '' },
-  { id: 39, title: '叹息的亡灵好想隐退第2期', info: '(全12话) 港台', image: '/images/2025.10/叹息的亡灵好像隐退第二期.jpg', category: '' },
-  { id: 40, title: '向往过家家的亡灵第3期', info: '(全13话) 港台', image: '/images/2025.10/贯彻辅助的宫廷魔法师惨遭流放.jpg', category: '' },
-  { id: 41, title: '爱雨满开的庭院魔法师蕾蒂西亚', info: '(全12话) 港台', image: '/images/2025.10/致不灭的你第三期.jpg', category: '' },
-  { id: 42, title: '王者天下 第6期', info: '(全13话) 港台', image: '/images/2025.10/王者天下第六期.jpg', category: '' },
-  { id: 43, title: '弑父的你第3期', info: '(全22话) 大陆', image: '/images/2025.10/新乱马 第二期.jpg', category: '' },
-  { id: 44, title: '新鸟与1/2 第2期', info: '(全12话) 环大陆', image: '/images/2025.10/一拳超人第三期.jpg', category: '' },
-  { id: 45, title: '末世二轮之旅', info: '(全12话) 港台', image: '/images/2025.10/末世二轮之旅.jpg', category: '' },
-    { id: 46, title: '古诺希亚', info: '(全21话) 港台', image: '/images/2025.10/古诺希亚.jpg', category: '' },
-    { id: 47, title: '东岛月彦想要成为假面骑士', info: '(全24话) 大陆/港台', image: '/images/2025.10/东岛丹三郎想要成为假面骑士.jpg', category: '' },
-    { id: 48, title: '朋友的妹妹只喜欢烦我', info: '(全12话) 港台', image: '/images/2025.10/朋友的妹妹只喜欢烦我.jpg', category: '' }
-])
+const filteredAnime = ref([])
 
-const sunday = ref([
-  { id: 49, title: '你与偶像光之美少女', info: '(年番) 环大陆', image: '/images/2025.10/少女型兵器想要成为家人.jpg', category: '' },
-  { id: 50, title: '公主专场管弦乐', info: '(年番)', image: '/images/2025.10/蓝色管弦乐.jpg', category: '' },
-  { id: 51, title: '轮椅的偶像公主 RING篇', info: '(长编)', image: '/images/2025.10/间谍过家家第三期.jpg', category: '' },
-  { id: 52, title: '深渊战鬼', info: '(全24话) 大陆/港台', image: '/images/2025.10/不擅长吸血的吸血鬼.jpg', category: '' },
-  { id: 53, title: '数码宝贝 BEATBREAK', info: '(全49话) 大陆/港台', image: '/images/2025.10/SI-VIS.jpg', category: '' },
-  { id: 54, title: 'S/Vs', info: '(全24话) 大陆/港台', image: '/images/2025.10/转生成英雄爸爸和精灵妈妈的女儿.jpg', category: '' },
-  { id: 55, title: '赛马娘 芦毛灰姑娘 Part.2', info: '(全10话) 港台', image: '/images/2025.10/赛马娘芦毛灰姑娘第二期.jpg', category: '' },
-  { id: 56, title: '蓝色管弦乐第2期', info: '(全11话) 港台', image: '/images/2025.10/蓝色管弦乐.jpg', category: '' },
-  { id: 57, title: '不能长期吸血的吸血鬼', info: '(全12话) 港台', image: '/images/2025.10/不擅长吸血的吸血鬼.jpg', category: '' },
-  { id: 58, title: '机械女仆玛丽', info: '(全12话) 港台', image: '/images/2025.10/机械女仆玛丽.jpg', category: '' },
-  { id: 59, title: '转生成了英雄爸爸和精灵妈妈的女儿', info: '(全12话) 大陆/港台', image: '/images/2025.10/转生成英雄爸爸和精灵妈妈的女儿.jpg', category: '' },
-  { id: 60, title: '一笑悬命 第3期', info: '(全12话) 大陆/港台', image: '/images/2025.10/无口的柏田同学和元气的太田君.jpg', category: '' },
-  { id: 61, title: '少女兵器想要成为家人', info: '(全12话) 环大陆', image: '/images/2025.10/少女型兵器想要成为家人.jpg', category: '' },
-  { id: 62, title: '小手拒绝别碰我', info: '(全12话) 港台', image: '/images/2025.10/小手指君别碰我.jpg', category: '' }
-])
+const filterAnime = () => {
+  if (!selectedCategory.value) {
+    filteredAnime.value = [...allAnime.value]
+  } else {
+    filteredAnime.value = allAnime.value.filter(anime => anime.category === selectedCategory.value)
+  }
+}
+
+onMounted(() => {
+  loadAnimeCategories()
+  filterAnime() // 初始化筛选
+})
 </script>
 
 <style scoped>
@@ -324,7 +301,6 @@ const sunday = ref([
 .category-filter {
   margin-bottom: 20px;
 }
-
 .category-filter select {
   padding: 8px 12px;
   font-size: 1rem;

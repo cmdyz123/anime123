@@ -88,6 +88,29 @@ const originalName = ref('')
 const selectedAnimes = ref([])
 const batchCategory = ref('')
 
+// 修复图片路径函数
+const fixImagePaths = (animeList) => {
+  return animeList.map(anime => {
+    let imagePath = anime.image
+    // 修复错误的路径格式
+    if (imagePath) {
+      // 移除/anime123/前缀
+      if (imagePath.startsWith('/anime123/')) {
+        imagePath = imagePath.replace('/anime123/', '/')
+      }
+      // 移除public/前缀
+      if (imagePath.startsWith('public/')) {
+        imagePath = imagePath.replace('public/', '/')
+      }
+      // 确保路径以/开头
+      if (!imagePath.startsWith('/')) {
+        imagePath = '/' + imagePath
+      }
+    }
+    return { ...anime, image: imagePath }
+  })
+}
+
 const addCategory = () => {
   if (newCategory.value.trim()) {
     categories.value.push({ name: newCategory.value.trim() })
@@ -193,7 +216,13 @@ onMounted(() => {
     // 从localStorage加载特定月份的番剧分类
     const savedAnime = JSON.parse(localStorage.getItem(`animeList${currentMonth.value}`))
     if (savedAnime) {
-      allAnime.value = savedAnime
+      // 修复图片路径
+      const fixedAnime = fixImagePaths(savedAnime)
+      allAnime.value = fixedAnime
+      // 如果修复了路径，保存回localStorage
+      if (JSON.stringify(fixedAnime) !== JSON.stringify(savedAnime)) {
+        localStorage.setItem(`animeList${currentMonth.value}`, JSON.stringify(fixedAnime))
+      }
     } else {
       // 只在没有保存数据时初始化空数组，不再加载默认的62部番剧
       allAnime.value = []

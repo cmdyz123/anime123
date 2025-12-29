@@ -1,14 +1,14 @@
-﻿﻿﻿﻿﻿<template>
+﻿﻿﻿﻿﻿﻿﻿<template>
   <div class="restricted-container">
     <div class="restricted-content">
-      <h1>娆㈣繋浣跨敤鍔ㄦ极绠＄悊绯荤粺</h1>
-      <p class="restricted-message">鎮ㄥ綋鍓嶄互鏅€氱敤鎴疯韩浠界櫥褰曪紝鍙兘鏌ョ湅鍔ㄦ极鍒楄〃锛屾棤娉曡繘琛屽垎绫荤鐞嗗拰鍔ㄦ极缂栬緫銆?</p>
+      <h1>欢迎使用动漫管理系统</h1>
+      <p class="restricted-message">您当前以普通用户身份登录，只能查看动漫列表，无法进行分类管理和动漫编辑。</p>
       
       <div class="anime-list-container">
-        <h2>鍔ㄦ极鍒楄〃</h2>
+        <h2>动漫列表</h2>
         <div class="category-filter">
           <select v-model="selectedCategory" @change="filterAnime">
-            <option value="">鎵€鏈夊垎绫?</option>
+            <option value="">所有分类</option>
             <option v-for="category in categories" :key="category.name" :value="category.name">{{ category.name }}</option>
           </select>
         </div>
@@ -35,8 +35,19 @@ const filteredAnime = ref([])
 const categories = ref([])
 const selectedCategory = ref('')
 
+// 修复图片路径
+const fixImagePaths = (animeList) => {
+  return animeList.map(anime => {
+    let imagePath = anime.image
+    if (imagePath && (imagePath.includes('/anime123/') || imagePath.includes('public/'))) {
+      imagePath = imagePath.replace('/anime123/', '/').replace('public/', '/')
+    }
+    return { ...anime, image: imagePath }
+  })
+}
+
 const loadAnimeData = () => {
-  // 鍔犺浇鎵€鏈夋湀浠界殑鍔ㄦ极鏁版嵁
+  // 加载所有月份的动漫数据
   const allAnime = []
   const months = ['2025.10', '2026.1']
   
@@ -44,13 +55,26 @@ const loadAnimeData = () => {
     const monthData = localStorage.getItem(`animeList${month}`)
     if (monthData) {
       const monthAnime = JSON.parse(monthData)
-      allAnime.push(...monthAnime)
+      // 修复图片路径
+      const fixedAnime = fixImagePaths(monthAnime)
+      allAnime.push(...fixedAnime)
+      // 更新localStorage中的数据
+      localStorage.setItem(`animeList${month}`, JSON.stringify(fixedAnime))
     } else {
-      // 濡傛灉娌℃湁淇濆瓨鐨勬暟鎹紝娣诲姞榛樿鍔ㄦ极
-      allAnime.push(
-        { id: 1, title: `${month} 新番1`, info: '(全12话) 大陆', image: `/images/${month}/default.jpg` },
-        { id: 2, title: `${month} 新番2`, info: '(全13话) 港台', image: `/images/${month}/default.jpg` }
-      )
+      // 如果没有保存的数据，添加默认动漫
+      if (month === '2025.10') {
+        // 使用2025.10目录下真实存在的图片
+        allAnime.push(
+          { id: 1, title: '欢迎来到笑容不断的职场', info: '(全12话) 日本', image: `/images/2025.10/欢迎来到笑容不断的职场.jpg` },
+          { id: 2, title: '一拳超人第三期', info: '(全12话) 日本', image: `/images/2025.10/一拳超人第三期.jpg` }
+        )
+      } else if (month === '2026.1') {
+        // 2026.1暂时使用2025.10的图片作为默认
+        allAnime.push(
+          { id: 3, title: '王者天下第六期', info: '(全24话) 日本', image: `/images/2025.10/王者天下第六期.jpg` },
+          { id: 4, title: '致不灭的你第三期', info: '(全12话) 日本', image: `/images/2025.10/致不灭的你第三期.jpg` }
+        )
+      }
     }
   })
   
