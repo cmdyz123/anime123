@@ -30,7 +30,6 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getCorrectImagePath } from '../utils/imageMapper'
-import { getAnime, updateAnime } from '../utils/storage'
 import { fixAnimeImagePaths } from '../utils/imageMapper'
 
 const route = useRoute()
