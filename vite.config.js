@@ -2,10 +2,10 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  base: '/anime123/', // GitHub仓库名称
+  base: '/anime123/',
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
